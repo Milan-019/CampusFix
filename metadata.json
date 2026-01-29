@@ -1,0 +1,7 @@
+{
+  "name": "CampusFix - Smart Issue Tracker",
+  "description": "A Zomato-style complaint tracking system for colleges powered by Gemini AI.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
