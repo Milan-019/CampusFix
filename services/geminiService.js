@@ -1,7 +1,7 @@
 // import { GoogleGenerativeAI } from "@google/generative-ai";
 // import { IssueType, IssuePriority } from "../types";
 
-// const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || 'AIzaSyAK85YDGF0PhjFA05MLgYdjkAK-HtOWV38';
+// const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY 
 
 // // Initialize Gemini Client
 // const genAI = new GoogleGenerativeAI(apiKey);
@@ -101,7 +101,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { IssueType, IssuePriority } from "../types.js";
 
-const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyAK85YDGF0PhjFA05MLgYdjkAK-HtOWV38';
+const apiKey = process.env.GEMINI_API_KEY ;
 if (!apiKey) throw new Error("GEMINI_API_KEY missing");
 
 const ai = new GoogleGenAI({ apiKey });
