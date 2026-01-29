@@ -1,8 +1,12 @@
+import fetch from "node-fetch";
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+
 import Complaint from './models/Complaint.js';
 import User from './models/User.js';
 
@@ -158,6 +162,41 @@ app.patch('/api/complaints/:id', authenticateToken, async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+app.post("/api/gemini", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!process.env.GEMINI_API_KEY) {
+  return res.status(500).json({ error: "Gemini API key not found in .env" });
+}
+
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ]
+        })
+      }
+    );
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error("Gemini Error:", error);
+    res.status(500).json({ error: "Gemini API failed" });
+  }
+});
+
 
 
 const PORT = process.env.PORT || 5000;
