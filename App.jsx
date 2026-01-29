@@ -200,7 +200,6 @@ const App = () => {
           location: newComplaint.location
         });
       }
-      setIsFormOpen(false);
     } catch (error) {
       showNotification(error.message || "Error submitting complaint.", 'error');
     }
