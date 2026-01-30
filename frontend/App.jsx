@@ -10,7 +10,7 @@ import { StudentPage } from './pages/StudentPage';
 import { AdminPage } from './pages/AdminPage';
 import Landing from "./pages/Landing";
 
-const API_URL = 'http://localhost:3001/api/complaints';
+const API_URL = `${import.meta.env.VITE_API_URL}/api/complaints`;
 
 // Mock Initial Data (Fallback)
 const MOCK_DATA = [
