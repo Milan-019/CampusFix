@@ -13,7 +13,7 @@ export const AuthForm = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_URL = 'http://localhost:5000/api/auth';
+  const API_URL = 'http://localhost:3001/api/auth';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

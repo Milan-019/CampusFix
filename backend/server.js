@@ -17,7 +17,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'Milan';
 // ============================================================================
 // 1. MONGODB CONNECTION SETUP
 // ============================================================================
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/';
+const MONGO_URI = process.env.MONGO_URI ;
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected Successfully'))
@@ -199,5 +199,5 @@ app.post("/api/gemini", async (req, res) => {
 
 
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

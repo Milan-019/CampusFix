@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import pic from '../Assets/SSTC.jpg';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -101,7 +102,10 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     textAlign: "center",
-    padding: "0 20px"
+    padding: "0 20px",
+    backgroundImage: `url(${pic})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center"
   },
 
   title: {
@@ -118,7 +122,7 @@ const styles = {
   subtitle: {
     maxWidth: "700px",
     fontSize: "1.1rem",
-    color: "#475569",
+    color: "#010813",
     marginBottom: "30px",
     lineHeight: "1.6"
   },

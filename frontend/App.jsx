@@ -10,8 +10,7 @@ import { StudentPage } from './pages/StudentPage';
 import { AdminPage } from './pages/AdminPage';
 import Landing from "./pages/Landing";
 
-
-const API_URL = 'http://localhost:5000/api/complaints';
+const API_URL = 'http://localhost:3001/api/complaints';
 
 // Mock Initial Data (Fallback)
 const MOCK_DATA = [
@@ -363,7 +362,8 @@ const App = () => {
                 )}
                 <header className="absolute top-0 left-0 w-full z-50">
                   <div className="px-4 h-16 flex items-center">
-                    <div className="flex items-center space-x-3 ">
+                    <div className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+      onClick={() => navigate("/")}>
                       <div className=" p-2 rounded-xl backdrop-blur-sm transform hover:scale-110 transition-transform">
                         <GraduationCap className="w-7 h-7 text-black" />
                       </div>
