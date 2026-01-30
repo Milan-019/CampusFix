@@ -8,6 +8,8 @@ import { logActivity } from './services/activityLogger';
 import { clearReminder, clearMaintenanceReminder, markAssignedToMaintenance } from './services/reminderService';
 import { StudentPage } from './pages/StudentPage';
 import { AdminPage } from './pages/AdminPage';
+import Landing from "./pages/Landing";
+
 
 const API_URL = 'http://localhost:5000/api/complaints';
 
@@ -54,7 +56,7 @@ const App = () => {
   // Clear reminders when complaints are resolved
   useEffect(() => {
     if (!user) return;
-    
+
     complaints.forEach(complaint => {
       if (complaint.status === IssueStatus.RESOLVED) {
         clearReminder(complaint.id);
@@ -73,7 +75,7 @@ const App = () => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(fullUser);
     showNotification(`Welcome back, ${userData.username}!`, 'success');
-    
+
     // Log login activity
     logActivity('User logged in', fullUser, {
       username: userData.username,
@@ -89,7 +91,7 @@ const App = () => {
         role: user.role
       });
     }
-    
+
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
@@ -105,7 +107,7 @@ const App = () => {
           'Authorization': `Bearer ${user?.token}`
         }
       });
-      
+
       if (response.status === 401 || response.status === 403) {
         handleLogout();
         showNotification('Session expired. Please login again.', 'warning');
@@ -115,22 +117,22 @@ const App = () => {
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}`);
       }
-      
+
       const data = await response.json();
       setComplaints(data);
       setIsBackendOffline(false);
     } catch (error) {
       console.warn("Fetch error:", error);
-      
+
       // Determine if it's a network error or server error
       if (error.message.includes('Failed to fetch') || error.message.includes('Network request failed')) {
-         if (!isBackendOffline) {
-             setIsBackendOffline(true);
-             showNotification('Cannot connect to server. Switching to offline mode.', 'warning');
-         }
-         if (complaints.length === 0) {
-             setComplaints(MOCK_DATA);
-         }
+        if (!isBackendOffline) {
+          setIsBackendOffline(true);
+          showNotification('Cannot connect to server. Switching to offline mode.', 'warning');
+        }
+        if (complaints.length === 0) {
+          setComplaints(MOCK_DATA);
+        }
       } else {
         showNotification('Failed to load complaints. Please try again later.', 'error');
       }
@@ -149,14 +151,14 @@ const App = () => {
       if (isBackendOffline) {
         // Offline simulation
         const mockSaved = {
-             ...newComplaint, 
-             createdAt: Date.now(), 
-             status: IssueStatus.PENDING, 
-             assignedTo: '' 
+          ...newComplaint,
+          createdAt: Date.now(),
+          status: IssueStatus.PENDING,
+          assignedTo: ''
         };
         setComplaints([mockSaved, ...complaints]);
         showNotification('Offline mode: Complaint saved locally (simulation).', 'info');
-        
+
         // Log offline complaint
         logActivity('Complaint raised (offline mode)', user, {
           complaintId: mockSaved.id,
@@ -168,7 +170,7 @@ const App = () => {
       } else {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user?.token}`
           },
@@ -176,21 +178,21 @@ const App = () => {
         });
 
         if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData.error || 'Failed to submit complaint');
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to submit complaint');
         }
-        
+
         const savedComplaint = await response.json();
-        
+
         // Ensure ID is properly mapped from MongoDB _id field
         const complaintWithId = {
           ...savedComplaint,
           id: savedComplaint.id || savedComplaint._id || newComplaint.id
         };
-        
+
         setComplaints([complaintWithId, ...complaints]);
         showNotification('Complaint submitted successfully!', 'success');
-        
+
         // Log complaint raised activity
         logActivity('Complaint raised', user, {
           complaintId: complaintWithId.id,
@@ -213,7 +215,7 @@ const App = () => {
   const handleUpdateStatus = async (id, newStatus) => {
     // Only admins
     if (user?.role !== 'admin') return;
-    
+
     // Guard against undefined ID
     if (!id || typeof id !== 'string') {
       console.error('Invalid complaint ID:', id);
@@ -222,15 +224,15 @@ const App = () => {
     }
 
     const previousComplaints = [...complaints];
-    
+
     // Optimistic Update - handle both 'id' and '_id' from backend
     setComplaints(prev => prev.map(c => {
       const complaintId = c.id || c._id;
       if (complaintId === id) {
-        return { 
-          ...c, 
+        return {
+          ...c,
           status: newStatus,
-          assignedTo: newStatus === IssueStatus.IN_PROGRESS && !c.assignedTo 
+          assignedTo: newStatus === IssueStatus.IN_PROGRESS && !c.assignedTo
             ? 'Maintenance Staff' // Generic assignment for now
             : c.assignedTo
         };
@@ -242,21 +244,21 @@ const App = () => {
       try {
         const response = await fetch(`${API_URL}/${id}`, {
           method: 'PATCH',
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user?.token}`
           },
           body: JSON.stringify({ status: newStatus, assignedTo: 'Maintenance Staff' })
         });
-        
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `HTTP ${response.status}: Failed to update status`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP ${response.status}: Failed to update status`);
         }
-        
+
         // Get updated complaint from server response
         const updatedComplaint = await response.json();
-        
+
         // Update state with server response to confirm and sync data
         setComplaints(prev => prev.map(c => {
           const complaintId = c.id || c._id;
@@ -269,10 +271,10 @@ const App = () => {
           }
           return c;
         }));
-        
+
         // Find the complaint for logging
         const complaint = previousComplaints.find(c => (c.id || c._id) === id);
-        
+
         // Log status update activity
         let actionMessage = '';
         if (newStatus === IssueStatus.RESOLVED) {
@@ -282,7 +284,7 @@ const App = () => {
         } else {
           actionMessage = `Issue status updated to ${newStatus}`;
         }
-        
+
         logActivity(actionMessage, user, {
           complaintId: id,
           complaintTitle: complaint?.title || 'Unknown',
@@ -295,12 +297,12 @@ const App = () => {
         if (newStatus === IssueStatus.IN_PROGRESS) {
           markAssignedToMaintenance(id);
         }
-        
+
         showNotification(`Status updated to ${newStatus}`, 'success');
       } catch (error) {
         console.error("Failed to update status on server:", error);
         setComplaints(previousComplaints); // Revert
-        
+
         // Better error messaging
         if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
           setIsBackendOffline(true);
@@ -320,7 +322,7 @@ const App = () => {
       } else {
         actionMessage = `Issue status updated to ${newStatus} (offline mode)`;
       }
-      
+
       logActivity(actionMessage, user, {
         complaintId: id,
         complaintTitle: complaint?.title || 'Unknown',
@@ -338,12 +340,12 @@ const App = () => {
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 pb-20 md:pb-0">
-        
+
         {notification && (
-          <Notification 
-              message={notification.message} 
-              type={notification.type} 
-              onClose={() => setNotification(null)} 
+          <Notification
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
           />
         )}
 
@@ -353,17 +355,17 @@ const App = () => {
             !user ? (
               <div className="relative min-h-screen w-full bg-cover bg-center">
                 {notification && (
-                    <Notification 
-                        message={notification.message} 
-                        type={notification.type} 
-                        onClose={() => setNotification(null)} 
-                    />
+                  <Notification
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification(null)}
+                  />
                 )}
                 <header className="absolute top-0 left-0 w-full z-50">
                   <div className="px-4 h-16 flex items-center">
                     <div className="flex items-center space-x-3 ">
                       <div className=" p-2 rounded-xl backdrop-blur-sm transform hover:scale-110 transition-transform">
-                          <GraduationCap className="w-7 h-7 text-black" />
+                        <GraduationCap className="w-7 h-7 text-black" />
                       </div>
                       <h1 className="text-2xl font-bold text-Blue drop-shadow-lg">
                         🏫 CampusFix
@@ -387,18 +389,18 @@ const App = () => {
                   <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm transform hover:scale-110 transition-transform">
-                          <GraduationCap className="w-7 h-7 text-white" />
+                        <GraduationCap className="w-7 h-7 text-white" />
                       </div>
                       <h1 className="text-xl font-bold text-white drop-shadow-lg">
                         🏫 CampusFix <span className="text-xs font-normal text-blue-100 ml-2 border-l border-blue-200 pl-2 uppercase tracking-widest">Student Portal</span>
                       </h1>
                     </div>
-                    
+
                     <div className="flex items-center gap-4">
-                       <div className="text-sm text-blue-100 hidden sm:block font-medium">
-                          👋 <span className="text-white font-bold">{user.username}</span>
-                       </div>
-                       <button
+                      <div className="text-sm text-blue-100 hidden sm:block font-medium">
+                        👋 <span className="text-white font-bold">{user.username}</span>
+                      </div>
+                      <button
                         onClick={handleLogout}
                         className="text-blue-100 hover:text-red-300 transition-all p-2 transform hover:scale-110 hover:rotate-180 duration-300"
                         title="Logout"
@@ -417,8 +419,8 @@ const App = () => {
                 )}
 
                 <main className="max-w-5xl mx-auto px-4 py-6">
-                  <StudentPage 
-                    complaints={complaints} 
+                  <StudentPage
+                    complaints={complaints}
                     isLoading={isLoading}
                     onAddComplaint={handleAddComplaint}
                     onReminderSent={handleReminderSent}
@@ -439,18 +441,18 @@ const App = () => {
                   <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="bg-purple-500/30 p-2 rounded-xl backdrop-blur-sm transform hover:scale-110 transition-transform">
-                          <Shield className="w-7 h-7 text-white" />
+                        <Shield className="w-7 h-7 text-white" />
                       </div>
                       <h1 className="text-xl font-bold text-white drop-shadow-lg">
                         🏫 CampusFix <span className="text-xs font-normal text-blue-100 ml-2 border-l border-blue-200 pl-2 uppercase tracking-widest">Admin Portal</span>
                       </h1>
                     </div>
-                    
+
                     <div className="flex items-center gap-4">
-                       <div className="text-sm text-blue-100 hidden sm:block font-medium">
-                          👋 <span className="text-white font-bold">{user.username}</span>
-                       </div>
-                       <button
+                      <div className="text-sm text-blue-100 hidden sm:block font-medium">
+                        👋 <span className="text-white font-bold">{user.username}</span>
+                      </div>
+                      <button
                         onClick={handleLogout}
                         className="text-blue-100 hover:text-red-300 transition-all p-2 transform hover:scale-110 hover:rotate-180 duration-300"
                         title="Logout"
@@ -469,7 +471,7 @@ const App = () => {
                 )}
 
                 <main className="max-w-5xl mx-auto px-4 py-6">
-                  <AdminPage 
+                  <AdminPage
                     complaints={complaints}
                     onUpdateStatus={handleUpdateStatus}
                     onReminderSent={handleReminderSent}
@@ -481,12 +483,12 @@ const App = () => {
             )
           } />
 
-          {/* Default redirect */}
+          {/* Landing Page */}
           <Route path="/" element={
             user ? (
               <Navigate to={user.role === 'admin' ? '/admin' : '/student'} />
             ) : (
-              <Navigate to="/auth" />
+              <Landing />
             )
           } />
         </Routes>

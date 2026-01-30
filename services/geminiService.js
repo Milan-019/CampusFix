@@ -4,13 +4,26 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { IssueType, IssuePriority } from "../types.js";
 
-const apiKey = process.env.GEMINI_API_KEY ;
-if (!apiKey) throw new Error("GEMINI_API_KEY missing");
+const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
-const ai = new GoogleGenAI({ apiKey });
+let ai = null;
+if (apiKey) {
+  ai = new GoogleGenAI({ apiKey });
+} else {
+  console.warn("GEMINI_API_KEY not configured - AI analysis will be disabled");
+}
 
 export const analyzeComplaint = async (description, imageBase64) => {
   try {
+    if (!ai) {
+      console.warn("AI not available - returning default analysis");
+      return {
+        category: "Other",
+        priority: "Medium",
+        technicalSummary: description.substring(0, 100)
+      };
+    }
+
     const parts = [
       {
         text: `
